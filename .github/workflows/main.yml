@@ -1,0 +1,39 @@
+name: 多看阅读自动化任务
+
+on:
+  # 每天8点执行（北京时间）
+  schedule:
+    - cron: "0 0 * * *"
+  # 支持手动触发
+  workflow_dispatch:
+
+jobs:
+  duokan-task:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 克隆仓库
+      uses: actions/checkout@v4
+      
+    - name: 设置Node.js环境
+      uses: actions/setup-node@v5
+      with:
+        node-version: "18"
+        
+    - name: 安装依赖
+      run: npm install
+      
+    - name: 运行自动化任务
+      env:
+        # 从Secrets获取Cookie
+        DUOKAN_COOKIE: ${{ secrets.DUOKAN_COOKIE }}
+      run: |
+        node duokan-task.js
+      # 任务失败时继续输出日志
+      continue-on-error: true
+      
+    - name: 输出任务结果
+      if: success() || failure()
+      run: |
+        echo "=== 多看阅读任务执行完成 ==="
+        echo "查看上方日志获取详细书豆收益"
